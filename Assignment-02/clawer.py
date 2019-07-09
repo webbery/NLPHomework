@@ -35,28 +35,53 @@ def add_station(subway,station1,station2,distance):
     add_station_detail(subway,station2,station1,distance)
 
 for i in range(18):
-    css = "#sub"+str(i)+" tr"
-    # css = "#sub"+str(0)+" tr"
-    data = r.html.find(css)
-    subway_name = ''
-    for idx in range(len(data)):
-        if idx==1: continue     # do not process describe grid
-        # print(data[idx].html)
-        # here we can use regex or css selector to get data
-        if idx==0:
-            searchObj = re.search(r'.*<td .*>(.*)相邻站间距信息统计表</td>',data[idx].html,re.M|re.S)
-            if searchObj:
-                subway_name = searchObj.group(1)
-                # print("searchObj.group(1) : ", searchObj.group(1))
-        else:
-            searchObj = re.search(r'<th>(.*)——(.*)</th>\n<td(.*)>(\w+)</td>',data[idx].html,re.M|re.S)
-            if searchObj:
-                station1 = searchObj.group(1)
-                station2 = searchObj.group(2)
-                distance = int(searchObj.group(4))
-                add_station(subway_name,station1,station2,distance)
+    regex_table = "#sub"+str(i)+" table"
+    # regex_table = "#sub"+str(9)+" table"
+    tables = r.html.find(regex_table)
+    for i_table in range(len(tables)):
+        data = tables[i_table].find("tr")
+        subway_name = ''
+        for idx in range(len(data)):
+            # print(data[idx].html)
+            if idx==1: continue     # do not process describe grid
+            
+            # here we can use regex or css selector to get data
+            if idx==0:
+                searchObj = re.search(r'.*<td .*>(.*)相邻站间距信息统计表</td>',data[idx].html,re.M|re.S)
+                if searchObj:
+                    subway_name = searchObj.group(1)
+                    # print("searchObj.group(1) : ", searchObj.group(1))
             else:
-                print(data[idx].html)
-    print(subway_name)
-    print('---------')
-    # print(stations)
+                searchObj = re.search(r'<th>(.*)——(.*)</th>\n<td(.*?)>(\w+)</td>',data[idx].html,re.M|re.S)
+                if searchObj:
+                    station1 = searchObj.group(1)
+                    station2 = searchObj.group(2)
+                    distance = int(searchObj.group(4))
+                    add_station(subway_name,station1,station2,distance)
+                # else:
+                #     print(data[idx].html)
+    # print(subway_name)
+    # print('---------')
+# print(stations)
+
+def BFS(start,dest):
+    station1 = stations[start]
+
+    path = []
+    seen = []
+    neighbors = station1['neighbor'][:]
+    while len(neighbors)>0:
+        front = neighbors.pop(0)
+        if front['name'] in seen: continue
+        
+        seen.append(front['name'])
+        print(front['name'])
+        # print(front['name'],neighbors)
+        if front['name']==dest:
+            break
+        neighbors = neighbors + stations[front['name']]['neighbor']
+        
+
+# def search(start,dest):
+#     print('')
+BFS('西单','呼家楼')
