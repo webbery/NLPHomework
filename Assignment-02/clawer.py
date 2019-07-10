@@ -79,46 +79,49 @@ def BFS(start,dest):
         
 # BFS('西单','呼家楼')
 
-def search(start,dest,map,sort_candidate):
-    results = []
+def search(start,dest,search_map,cost):
+    result = None
     pathes = [{'path':[start],'distance':0,'subways':[]}]
 
-    visited = []
+    # visited = []
     while pathes:
         path = pathes.pop(0)
         station_name = path['path'][-1]
-        if station_name in visited: continue
-        visited.append(station_name)
 
-        neighbors = map[station_name]['neighbor']
+        neighbors = search_map[station_name]['neighbor']
         for neighbor in neighbors:
+            if neighbor['name'] in path['path']: continue   # exclude loop path
             new_path = path['path'] + [neighbor['name']]
-            subway = list(set(map[station_name]['subway'])&set(map[neighbor['name']]['subway']))
+            subway = list(set(search_map[station_name]['subway'])&set(search_map[neighbor['name']]['subway']))
             new_subway =path['subways'] + (subway if subway[0] not in path['subways'] else [])
             path_info = {
                 'path':new_path,
                 'distance': path['distance']+neighbor['distance'],
                 'subways': new_subway
             }
+            # exclude path which is badder than results
+            if result and cost(path_info)>cost(result): continue
             pathes.append(path_info)
 
             if neighbor['name']==dest:
-                results.append(path_info)
+                result = path_info
                 break
-    return sort_candidate(results)[0]
+    return result
 
-def get_stations_count(obj):
-    # print(obj)
-    return sorted(obj,key=lambda info: len(info['path']))
+def station_count(obj):
+    return len(obj['path'])
 
-def get_distance(obj):
-    return sorted(obj,key=lambda info: info['distance'])
+def transfer_count(obj):
+    return len(obj['subways'])
 
-def get_transfer_count(obj):
-    return sorted(obj,key = lambda info: len(info['subways']))
+def distance(obj):
+    return obj['distance']
 
-result = search('古城','望京',stations,get_stations_count)
-print(result)
+result = search('古城','望京',stations,station_count)
+print('最少站点:',result)
 
-result = search('古城','望京',stations,get_transfer_count)
-print(result)
+result = search('古城','望京',stations,transfer_count)
+print('最少换乘:',result)
+
+result = search('古城','望京',stations,distance)
+print('最短距离:',result)
