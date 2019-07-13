@@ -79,7 +79,7 @@ def BFS(start,dest):
         
 # BFS('西单','呼家楼')
 
-def search(start,dest,search_map,cost):
+def search_detail(start,dest,search_map,cost):
     result = None
     pathes = [{'path':[start],'distance':0,'subways':[]}]
 
@@ -114,14 +114,25 @@ def station_count(obj):
 def transfer_count(obj):
     return len(obj['subways'])
 
-def distance(obj):
+def get_distance(obj):
     return obj['distance']
 
-result = search('古城','望京',stations,station_count)
-print('最少站点:',result)
+def is_exist(station):
+    if not stations.__contains__(station):
+        print(station+' not exist')
+        return False
+    return True
 
-result = search('古城','望京',stations,transfer_count)
-print('最少换乘:',result)
+def search(src,dst):
+    if not is_exist(src) or not is_exist(dst):
+        return 
+    result = search_detail(src,dst,stations,station_count)
+    print('最少站点:',result)
 
-result = search('古城','望京',stations,distance)
-print('最短距离:',result)
+    result = search_detail(src,dst,stations,transfer_count)
+    print('最少换乘:',result)
+
+    result = search_detail(src,dst,stations,get_distance)
+    print('最短距离:',result)
+
+# search('海淀五路居','平西路')
