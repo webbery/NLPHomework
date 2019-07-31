@@ -104,15 +104,26 @@ def search_detail(start,dest,search_map,cost):
             pathes.append(path_info)
 
             if neighbor['name']==dest:
+                # print(path_info)
                 result = path_info
                 break
     return result
+
+class TransferNum:
+    def __init__(self,transfer,station):
+        self.transfer_count=transfer
+        self.station_count=station
+
+    def __gt__(self, value):
+        if self.transfer_count>value.transfer_count: return True
+        if self.station_count>value.station_count: return True
+        return False
 
 def station_count(obj):
     return len(obj['path'])
 
 def transfer_count(obj):
-    return len(obj['subways'])
+    return TransferNum(len(obj['subways']),len(obj['path']))
 
 def get_distance(obj):
     return obj['distance']
@@ -136,3 +147,35 @@ def search(src,dst):
     print('最短距离:',result)
 
 # search('海淀五路居','平西路')
+
+def a_star(start,dest,search_map,cost):
+    result = None
+    pathes = [{'path':[start],'distance':0,'subways':[]}]
+
+    # visited = []
+    while pathes:
+        path = pathes.pop(0)
+        station_name = path['path'][-1]
+
+        neighbors = search_map[station_name]['neighbor']
+        for neighbor in neighbors:
+            if neighbor['name'] in path['path']: continue   # exclude loop path
+            new_path = path['path'] + [neighbor['name']]
+            subway = list(set(search_map[station_name]['subway'])&set(search_map[neighbor['name']]['subway']))
+            new_subway =path['subways'] + (subway if subway[0] not in path['subways'] else [])
+            path_info = {
+                'path':new_path,
+                'distance': path['distance']+neighbor['distance'],
+                'subways': new_subway
+            }
+            # exclude path which is badder than results
+            
+            # if result and cost(path_info)>cost(result): continue
+            # pathes.append(path_info)
+
+            if neighbor['name']==dest:
+                result = path_info
+                break
+    return result
+
+# print(search('顺义','西土城'))
